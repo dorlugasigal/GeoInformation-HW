@@ -112,14 +112,12 @@ app.controller('Main', function ($rootScope, $scope, $http, $timeout) {
 
     $scope.AddJson = function () {
         $scope.Clear();
-        $http.get('https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_populated_places.geojson').success(function (data) {
+        $http.get('traffic_lights.json').success(function (data) {
             $scope.jsonData = data;
             for (var i = 0; i < $scope.jsonData.features.length; i++) {
                 var cor = $scope.jsonData.features[i].geometry.coordinates;
                 var marker = new google.maps.Marker({
-                    title: $scope.jsonData.features[i].properties.ADM0NAME + ', '
-                        + ($scope.jsonData.features[i].properties.ADM1NAME ? ($scope.jsonData.features[i].properties.ADM1NAME + ', ') : '')
-                        + ($scope.jsonData.features[i].properties.LS_NAME ? $scope.jsonData.features[i].properties.LS_NAME : ''),
+                    title: $scope.jsonData.features[i].properties.NUMBER ,
                     animation: google.maps.Animation.DROP
                 });
                 $scope.markers.push(marker);
