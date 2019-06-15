@@ -54,7 +54,7 @@ app.controller('Main', function ($rootScope, $scope, $http, $timeout) {
                     bounds.union(place.geometry.viewport);
                 } else {
                     bounds.extend(place.geometry.location);
-                    }
+                }
             });
             $scope.map.fitBounds(bounds);
         });
@@ -109,29 +109,54 @@ app.controller('Main', function ($rootScope, $scope, $http, $timeout) {
             return;
         }
     };
-
+    $scope.calculateDistance = function (lat1, lon1, lat2, lon2) {
+        var R = 6371; // km (change this constant to get miles)
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var d = R * c;
+        if (d > 1) return Math.round(d) + "km";
+        else if (d <= 1) return Math.round(d * 1000) + "m";
+        return d;
+    }
     $scope.AddJson = function () {
         $scope.Clear();
-        $http.get('traffic_lights.json').success(function (data) {
-            $scope.jsonData = data;
-            for (var i = 0; i < $scope.jsonData.features.length; i++) {
-                var cor = $scope.jsonData.features[i].geometry.coordinates;
-                var marker = new google.maps.Marker({
-                    title: $scope.jsonData.features[i].properties.NUMBER ,
-                    animation: google.maps.Animation.DROP
-                });
-                $scope.markers.push(marker);
-                var lat = Number(cor[1]);
-                var lng = Number(cor[0]);
-                var latlng = new google.maps.LatLng(lat, lng);
-                marker.addListener('click', function (x) {
-                    $scope.CurrentCoordinates = '(' + lat + ',' + lng + ')';
-                    alert(x.va.currentTarget.title);
-                });
-                marker.setPosition(latlng);
-                marker.setMap($scope.map);
+        $http.get('traffic_lights.json').success(function (traffic) {
+            $scope.traffic = traffic;
+            $http.get('cameras.json').success(function (cameras) {
+                $scope.cameras = cameras.features;
+                for (var i = 0; i < $scope.traffic.features.length; i++) {
+                    console.log($scope.traffic.features[i]);
+                    let coordinates = $scope.traffic.features[i].geometry.coordinates;
+                    for (var j = 0; j < $scope.cameras.length; j++) {
+                        let CamCoordinates = $scope.cameras[j].geometry.coordinates;
+                        console.log($scope.calculateDistance(coordinates[0], coordinates[1], CamCoordinates[0], CamCoordinates[1]));                        
+                    }
+                }
 
-            }
+
+                //$scope.jsonData = data;
+                //for (var i = 0; i < $scope.jsonData.features.length; i++) {
+                //    var cor = $scope.jsonData.features[i].geometry.coordinates;
+                //    var marker = new google.maps.Marker({
+                //        title: $scope.jsonData.features[i].properties.NUMBER,
+                //        animation: google.maps.Animation.DROP
+                //    });
+                //    $scope.markers.push(marker);
+                //    var lat = Number(cor[1]);
+                //    var lng = Number(cor[0]);
+                //    var latlng = new google.maps.LatLng(lat, lng);
+                //    marker.addListener('click', function (x) {
+                //        $scope.CurrentCoordinates = '(' + lat + ',' + lng + ')';
+                //        alert(x.va.currentTarget.title);
+                //    });
+                //    marker.setPosition(latlng);
+                //    marker.setMap($scope.map);
+                //}
+            });
         });
     };
 

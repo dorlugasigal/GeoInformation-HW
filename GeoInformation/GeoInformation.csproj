@@ -105,6 +105,7 @@
   <ItemGroup>
     <Content Include="App\Scripts\Plugins\bootstrap.min.css.map" />
     <Content Include="App\stations.geojson" />
+    <None Include="cameras.json" />
     <None Include="traffic_lights.json" />
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
