@@ -109,6 +109,8 @@ app.controller('Main', function ($rootScope, $scope, $http, $timeout) {
             return;
         }
     };
+
+
     $scope.calculateDistance = function (lat1, lon1, lat2, lon2) {
         var R = 6371; // km (change this constant to get miles)
         var dLat = (lat2 - lat1) * Math.PI / 180;
@@ -118,10 +120,10 @@ app.controller('Main', function ($rootScope, $scope, $http, $timeout) {
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
         var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         var d = R * c;
-        if (d > 1) return Math.round(d) + "km";
-        else if (d <= 1) return Math.round(d * 1000) + "m";
-        return d;
-    }
+        return Math.round(d * 1000);
+    };
+
+
     $scope.AddJson = function () {
         $scope.Clear();
         $http.get('traffic_lights.json').success(function (traffic) {
@@ -133,29 +135,41 @@ app.controller('Main', function ($rootScope, $scope, $http, $timeout) {
                     let coordinates = $scope.traffic.features[i].geometry.coordinates;
                     for (var j = 0; j < $scope.cameras.length; j++) {
                         let CamCoordinates = $scope.cameras[j].geometry.coordinates;
-                        console.log($scope.calculateDistance(coordinates[0], coordinates[1], CamCoordinates[0], CamCoordinates[1]));                        
+                        dist = $scope.calculateDistance(coordinates[0], coordinates[1], CamCoordinates[0], CamCoordinates[1]);
+                        if (dist < 100) {
+                            console.log(dist);
+                            $scope.traffic.features[i].safe = true;
+                            break;
+                        }
+                        $scope.traffic.features[i].safe = false;
                     }
                 }
+                $scope.SafeCount = ($scope.traffic.features.filter(x => x.safe === true)).length;
+                $scope.NotSafeCount = ($scope.traffic.features.filter(x => !x.safe)).length;
+                for (var k = 0; k < $scope.traffic.features.length; k++) {
+                    var cor = $scope.traffic.features[k].geometry.coordinates;
 
+                    let url = "http://maps.google.com/mapfiles/ms/icons/";
+                    url += $scope.traffic.features[k].safe ? "green-dot.png" : "red-dot.png";
+                    let marker = new google.maps.Marker({
+                        title: $scope.traffic.features[k].properties.NUMBER !== null ? "רמזור מספר - " +  $scope.traffic.features[k].properties.NUMBER : "רמזור ללא מספר",
+                        animation: google.maps.Animation.DROP,
+                        icon: {
+                            url: url,
+                        }
+                    });
 
-                //$scope.jsonData = data;
-                //for (var i = 0; i < $scope.jsonData.features.length; i++) {
-                //    var cor = $scope.jsonData.features[i].geometry.coordinates;
-                //    var marker = new google.maps.Marker({
-                //        title: $scope.jsonData.features[i].properties.NUMBER,
-                //        animation: google.maps.Animation.DROP
-                //    });
-                //    $scope.markers.push(marker);
-                //    var lat = Number(cor[1]);
-                //    var lng = Number(cor[0]);
-                //    var latlng = new google.maps.LatLng(lat, lng);
-                //    marker.addListener('click', function (x) {
-                //        $scope.CurrentCoordinates = '(' + lat + ',' + lng + ')';
-                //        alert(x.va.currentTarget.title);
-                //    });
-                //    marker.setPosition(latlng);
-                //    marker.setMap($scope.map);
-                //}
+                    $scope.markers.push(marker);
+                    var lat = Number(cor[1]);
+                    var lng = Number(cor[0]);
+                    var latlng = new google.maps.LatLng(lat, lng);
+                    marker.addListener('click', function (x) {
+                        $scope.CurrentCoordinates = '(' + lat + ',' + lng + ')';
+                        alert(x.va.currentTarget.title);
+                    });
+                    marker.setPosition(latlng);
+                    marker.setMap($scope.map);
+                }
             });
         });
     };

@@ -73,10 +73,23 @@
                         <input type="text" ng-model="SearchMarker.title" style="width:100%;padding-left:5px;" form-control" placeholder="Enter a name of a city or country">
                         <div ng-repeat="x in markers | filter:SearchMarker | orderBy:'title'" style="display:flex;flex-direction:column;">
                             <button style="font-weight:bold;color:white;border-color:black;border-width:2px;background-color:slategray"
-                                    title="({{x.getPosition().lat()}},{{x.getPosition().lng()}})'" 
-                                    ng-click="FlightToMarker(x.getPosition().lat(),x.getPosition().lng())">{{x.title}}</button>
+                                    title="({{x.getPosition().lat()}},{{x.getPosition().lng()}})'"
+                                    ng-click="FlightToMarker(x.getPosition().lat(),x.getPosition().lng())">
+                                {{x.title}}
+                            </button>
                         </div>
                     </div>
+
+                </div>
+                <div style="text-align:center;margin-top:25px;">
+                <div ng-if="SafeCount">
+                    <span style="font-weight:bold;">מספר צמתים בטוחות:</span>
+                    <span style="font-weight:bold;font-size:25px;color:green">{{SafeCount}}</span>
+                </div>
+                <div ng-if="NotSafeCount">
+                    <span style="font-weight:bold;">מספר צמתים לא בטוחות:</span>
+                    <span style="font-weight:bold;font-size:25px;color:red">{{NotSafeCount}}</span>
+                </div>
                 </div>
             </div>
         </div>
